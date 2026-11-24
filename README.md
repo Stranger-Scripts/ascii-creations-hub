@@ -43,6 +43,7 @@ Each creation is a single, self-contained Python script that uses only the stand
 | Creation | Script | Description |
 |----------|--------|-------------|
 | **Specter** | [`src/specter.py`](src/specter.py) | Animated ghost in two forms (halftone sheet ghost or hooded wraith), with a twinkling starfield, drifting mini-ghosts, trailing wisps, glitch bursts and a status HUD. |
+| **Dragonfly** | [`src/dragonfly.py`](src/dragonfly.py) | A looping short: a dragonfly darts over a pond at sunset, dips into the water and lands on a branch. Perspective water, ripples, reflections and a springy branch. [How the math works](docs/dragonfly-math.md). |
 
 More to come.
 
@@ -59,6 +60,7 @@ More to come.
 git clone https://github.com/Stranger-Scripts/ascii-creations-hub.git
 cd ascii-creations-hub
 python3 src/specter.py
+python3 src/dragonfly.py
 ```
 
 Press `Ctrl+C` to quit.
@@ -119,15 +121,101 @@ python3 src/specter.py --help                   # full list of options
 
 ---
 
+## Dragonfly
+
+A short, looping film: a dragonfly enters from the left, darts and hovers over a pond at sunset, dips its abdomen into the water, overshoots a branch sticking out of the pond, turns round and lands on its tip. The branch bobs under it, it rests and twitches its wings, then takes off and the loop starts again (about 21 s).
+
+![Dragonfly landing on a branch over a pond](assets/dragonfly.gif)
+
+<sub>`dragonfly.py --seed 7`, recorded with VHS from [`dragonfly.tape`](dragonfly.tape).</sub>
+
+<details>
+<summary>Plain-text frame</summary>
+
+```
+
+                                                                              ·         ·
+
+                          ·                                                                ·
+                                       ·
+                       ░░░░░░                     ·                         ·
+                    ░░░░░░░░░░░░
+  ··              ░░░░░▒▒▒▒▒▒░░░░░                     \\\      /
+                 ░░░░▒▒▓████▓▒▒░░░░                     \\\\ /////
+                 ░░░▒▒▓██████▓▒░░░░                       ●◆◆=======-
+                 ░░░▒▒▓██████▓▒░░░░                       /||\
+▄▲    ▲          ░░░░▒▒▒▓▓▓▓▒▒░░░░                         ||
+███▄▲▄█◣ ▲ ◢▲▄█ ▲ █░█░▲▄█◣▒▲░▲░░░     ▲◣   ▲◣◣ ◢◢◢▲◣◣ ▲ \\▲||█◣   █ ▲  ▲ ▲◣   ▲◣    █◣ ◢▲ ▲▄█  ▲
+████████████████████████████▄██▄██▄█▄███▄█▄███▄██████▄███\\\||█▄█████▄◢████▄████▄█████▄██▄██████
+███████████████████████████████████████████████████████████\\\█████///██████████████████████████
+████████████████████████████████████████████████████████████||███////███████████████████████████
+████████████████████████████▀██▀██▀█▀███▀█▀███▀██████▀██████|||////██▀◥████▀████▀█████▀██▀██████
+███▀▼▀█◤ ▼ ◥▼▀█ ▼ █░█░▼▀█◤▒▼░▼░░░     ▼◤   ▼◤◤ ◥◥◥▼◤◤ ▼   ▼◤|//// █ ▼  ▼ ▼◤   ▼◤    █◤ ◥▼ ▼▀█  ▼
+▀▼    ▼          ░░░░▒▒▒▓▓▓▓▒▒░░░░                          |//
+                 ░░░▒▒▓██████▓▒░░░░                          ||                           █
+      |          ░░░▒▒▓██████▓▒░░░░                          |||                          █
+     |           ░░░░▒▒▓████▓▒▒░░░░                          |:|                          |
+ █·· |            ░░░░░▒▒▒▒▒▒░░░░░                           |:|                        | |
+ █   |              ░░░░░░░░░░░░                             |:||                       | |
+ |   |                 ░░░░░░                     ·      (((/||||\)))       ·           |  |
+ |   |                                 ·                   \\_|||___///                 |  |
+||   |                    ···                                 |||                       |  |
+|    |                 ··                                    |||                        |  |
+|    |        -   ··        ·                                 |  - -          ·         |  |
+|    |                   ·+·                     -          \\                          |--|
+```
+<sub>`dragonfly.py --snapshot 12.4 --no-color --seed 7` in a 96×30 terminal</sub>
+
+</details>
+
+Everything in the scene is computed from a handful of ideas: a Catmull-Rom spline with smoothstep keyframes for the flight, sine-driven wings with an integrated phase, a pinhole-camera projection of the water plane, a sum of travelling waves, ripple rings on the ground plane, reflections mirrored about each object's waterline, and a damped oscillator for the branch. [`docs/dragonfly-math.md`](docs/dragonfly-math.md) walks through each one, with the formulas and a list of experiments to try.
+
+### Usage
+
+```bash
+python3 src/dragonfly.py                      # dusk, loops forever
+python3 src/dragonfly.py --palette night      # moonlit pond
+python3 src/dragonfly.py --debug --speed 0.4  # slow motion with the flight path and a HUD
+python3 src/dragonfly.py --once               # play once, then stay perched
+python3 src/dragonfly.py --snapshot 12 > frame.txt
+python3 src/dragonfly.py --help
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-p`, `--palette {dusk,day,night}` | `dusk` | Colour scheme. |
+| `--fps N` | `30` | Target frame rate. |
+| `--speed X` | `1.0` | Playback speed. `0.5` is half speed. |
+| `--seed N` | random | Seed for the waves, tree line, reeds and the two random fish ripples. |
+| `--once` | off | Play the film once and stay perched instead of looping. |
+| `--debug` | off | Draw the flight path, the waypoints and a HUD (time, phase, wing-beat frequency, speed, heading, branch angle, fps). |
+| `--ascii` | off | Plain ASCII glyphs even on a UTF-8 terminal (also used automatically when stdout isn't UTF-8). |
+| `--no-reeds` | off | Hide the foreground reeds. |
+| `--no-color` | off | Monochrome output. The `NO_COLOR` environment variable is also respected. |
+| `--transparent` | off | Keep the terminal's own background instead of painting the sky and water. |
+| `--list-palettes` | | Print the available palette names and exit. |
+| `--snapshot T` | | Print a single frame at time `T` (seconds) and exit. Combine with `--no-color` for plain text. |
+
+Needs a terminal of at least 40×18 cells; it adapts to resizing while running.
+
+---
+
 ## Repository layout
 
 ```
 ascii-creations-hub/
 ├── assets/
-│   └── specter.gif     # README preview, generated from animation.tape
+│   ├── specter.gif     # README preview, generated from animation.tape
+│   └── dragonfly.gif   # README preview, generated from dragonfly.tape
+├── docs/
+│   └── dragonfly-math.md  # how the dragonfly's math and logic work
 ├── src/
-│   └── specter.py      # Specter (sheet + wraith)
-├── animation.tape      # VHS script that records the preview GIF
+│   ├── specter.py      # Specter (sheet + wraith)
+│   └── dragonfly.py    # Dragonfly short
+├── animation.tape      # VHS script that records the Specter preview GIF
+├── dragonfly.tape      # VHS script that records the Dragonfly preview GIF
 ├── requirements.txt
 └── README.md
 ```
@@ -139,6 +227,7 @@ The GIFs in this README are recorded with [VHS](https://github.com/charmbracelet
 ```bash
 mkdir -p assets
 vhs animation.tape      # writes assets/specter.gif
+vhs dragonfly.tape      # writes assets/dragonfly.gif
 ```
 
 The tape fixes the seed, frame rate and terminal size, so re-recording gives the same layout.
